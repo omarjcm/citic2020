@@ -1,0 +1,117 @@
+library(readr)
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(nortest)
+library(car)
+library(DescTools)
+
+dataset <- read_csv("../research/Data/mixta/dataset.csv")
+
+datos <- dataset %>% 
+  mutate(obp_algorithm = parse_factor(as.character(obp_algorithm), 
+                                      levels = c("G01", "G02", "G03")),
+         prp_algorithm = parse_factor(as.character(prp_algorithm), 
+                                      levels = c("LGAP", "SSHAPE")),
+         ls_algorithm = parse_factor(as.character(ls_algorithm), 
+                                     levels = c("LS_1x0", "LS_1x1", "LS_1x2", "LS_2x2")),
+         num_orders = parse_factor(as.character(num_orders),
+                                   levels = c('20', '30', '40', '50', '60', '70', '80', '90', '100')),
+         capacity_device = parse_factor(as.character(capacity_device),
+                                        levels = c('30', '45', '60', '75')))
+glimpse(datos)
+
+ggplot(data=datos, mapping = aes(x = ls_algorithm, y=after_distance, fill=prp_algorithm)) +
+  stat_boxplot(geom ='errorbar', width = 0.6) +
+  geom_boxplot(width = 0.6) +
+  facet_grid(~obp_algorithm) +
+  scale_y_continuous(breaks = seq(0, to=25000, by=5000)) + 
+  theme_bw() +
+  xlab("Heurísticas de Búsqueda Local") +
+  ylab("Distancia") +
+  labs(fill = "Algoritmos de Recogida") +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.x = element_text(size = 14, colour = "black"),
+        axis.title.y = element_text(size = 14, colour = "black"),
+        axis.line = element_line(colour = "black")) 
+
+
+ggplot(data=datos, mapping = aes(x = obp_algorithm, y=after_distance, fill=prp_algorithm)) +
+  stat_boxplot(geom ='errorbar', width = 0.6) +
+  geom_boxplot(width = 0.6) +
+  facet_grid(~ls_algorithm) +
+  scale_y_continuous(breaks = seq(0, to=25000, by=5000)) + 
+  theme_bw() +
+  xlab("Algoritmos de Agrupamiento") +
+  ylab("Distancia") +
+  labs(fill = "Algoritmos de Recogida") +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.x = element_text(size = 14, colour = "black"),
+        axis.title.y = element_text(size = 14, colour = "black"),
+        axis.line = element_line(colour = "black")) 
+
+ggplot(data=datos, mapping = aes(x = prp_algorithm, y=after_distance, fill=ls_algorithm)) +
+  stat_boxplot(geom ='errorbar', width = 0.6) +
+  geom_boxplot(width = 0.6) +
+  facet_grid(~obp_algorithm) +
+  scale_y_continuous(breaks = seq(0, to=25000, by=5000)) + 
+  theme_bw() +
+  xlab("Algoritmos de Agrupamiento") +
+  ylab("Distancia") +
+  labs(fill = "Algoritmos de Recogida") +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.x = element_text(size = 14, colour = "black"),
+        axis.title.y = element_text(size = 14, colour = "black"),
+        axis.line = element_line(colour = "black")) 
+
+datos %>% group_by(obp_algorithm, prp_algorithm, ls_algorithm) %>% 
+  summarise_at(
+    vars(after_distance),
+    list (
+      PROMEDIO = ~mean(., na.rm = FALSE),
+      DESVIACION = ~sd(., na.rm = FALSE),
+      MINIMO = ~min(., na.rm = FALSE)
+    )
+  ) %>% 
+  arrange(MINIMO) %>% 
+  head(n = 10)
+
+ggplot(data = datos, aes(x= after_distance, y= ..density..)) + 
+  geom_density(alpha= .25) +
+  labs(title= 'Gráfico de densidad para las distancias', y= "Densidad", x= "Distancias")
+
+# Prueba de hipótesis de Kolmogorov-Smirnov
+ks.test(datos$after_distance, pnorm, mean=mean(datos$after_distance), sd = sd(datos$after_distance)) 
+
+# Prueba de hipótesis de Lilliefors
+lillie.test(datos$after_distance)
+
+bartlett.test(data=datos, before_distance ~ obp_algorithm)
+
+leveneTest(before_distance ~ obp_algorithm, data = datos, center = "median")
+
+library(WRS2)
+t1way(before_distance ~ obp_algorithm, data = datos)
+
+lincon(before_distance ~ obp_algorithm, data = datos)
+
+t1way(before_distance ~ prp_algorithm, data = datos)
+
+lincon(before_distance ~ prp_algorithm, data = datos)
+
+t1way(before_distance ~ ls_algorithm, data = datos)
+
+lincon(before_distance ~ ls_algorithm, data = datos)
+
+yuend(datos$before_distance, datos$after_distance)

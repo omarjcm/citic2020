@@ -1,0 +1,15 @@
+============================================================================
+Análisis de Variables Cuantitativas y Cualitativas en la Investigación Científica. Una perspectiva desde la Ciencia de Datos.
+============================================================================
+
+Cuando se diseña una propuesta de investigación científica, entre algunos elementos se tiene en cuenta principalmente su alcance: la identificación de variables a descubrir (exploratoria), a especificar (descriptiva), a relacionar (correlacional) o a describir del por qué de la relación (explicativa); en todos los casos mencionados, la Ciencia de los Datos nos proporciona una respuesta sobre técnicas o algoritmos a utilizar e interpretar los resultados basados en evidencia. 
+
+En esta conferencia presentaremos cómo se pueden describir (estadística descriptiva) o generalizar (estadística inferencial) las variables cuantitativas y/o cualitativas en una investigación. 
+
+Eĺ análisis se hará a partir de un caso de estudio: una investigación cuantitativa experimental aleatoria con un alcance correlacional (variables cuantitativas y cualitativas). Se utilizará el lenguaje de programación estadístico R para su respectivo procesamiento estadístico descriptivo e inferencial.
+
+============================================================================
+
+Guillermo O. Pizarro-Vasquez
+Docente Investigador en la Universidad Politécnica Salesiana,
+Presidente del Capítulo de la Sociedad de Inteligencia Computacional en la Sección IEEE Ecuador.

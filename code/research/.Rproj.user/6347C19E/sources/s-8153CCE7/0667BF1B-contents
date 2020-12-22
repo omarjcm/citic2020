@@ -1,0 +1,324 @@
+---
+title: "Análisis de variables cuantitativas y cualitativas en la Investigación Científica."
+subtitle: "Una perspectiva desde la Ciencia de Datos."
+author: "<br /><br />Guillermo Pizarro, gpizarro@ups.edu.ec"
+institute: "Universidad Politécnica Salesiana"
+date: "15 de diciembre de 2020"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: center, middle
+
+<img src="Images/huancavelica.png" style="display: absolute; float: left; top:10px;" alt="" width="200" />
+<img src="Images/ups.png" style="display: absolute; float: right; bottom: 10px;" alt="" width="200" />
+
+<div style="display: block; height: 100px;"></div>
+
+# CITIC 2020
+## VIII Congreso Internacional en Tecnologías de Información y Comunicación <br />
+
+<div style="display: block; height: 100px;"></div>
+
+<img src="Images/IEEE_CIS.png" style="display: absolute; " alt="" width="200" />
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+library(readr)
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(nortest)
+library(car)
+library(DescTools)
+library(WRS2)
+```
+
+---
+
+#Proceso de Diseño de una Investigación Científica
+
+Una investigación requiere de un diseño previo su implementación donde se contemple:
+
+* Enfoque: cuantitativo, cualitativo y mixto.
+* Alcance: exploratorio, descriptivo, correlacional y explicativo.
+* Diseño: experimentales y no experimentales.
+* Planteamiento de Hipótesis.
+* Selección de la Muestra: por tipo o por proceso.
+* Técnicas de Recolección de datos.
+* Análisis de los Datos.
+
+---
+class: center, middle
+
+# Variables Cuantitativas y Cualitativas
+
+### Diseño Expertimental Puro Aleatorio con un Alcance Correlacional
+
+---
+
+#Problema de Investigación
+
+- Optimización del agrupamiento y recogida de pedidos en un almacén rectangular con un pasillo transversal.
+
+<div style="width: auto; display: flex;  align-items: center;  justify-content: center;">
+<img src="Images/fig_05.png" style="" width="500" />
+</div>
+
+---
+
+#Preguntas de Investigación
+
+* ¿Existen diferencias entre las medias de las distancias con respecto a los algoritmos de agrupamiento de pedidos?
+* ¿Existen diferencias entre las medias de las distancias con respecto a los algoritmos de recogida de pedidos?
+* ¿Existen diferencias entre las medias de las distancias con respecto a los algoritmos de búsqueda local y sus variaciones?
+* ¿La aplicación de los algoritmos heurísticos de búsqueda local inciden en la minimización de la distancia total recorrida con respecto a la distancia total obtenida mediante los algoritmos de agrupamiento y recogida de pedidos?
+
+---
+
+# Análisis Exploratorio de los Datos
+
+```{r include=FALSE}
+dataset <- read_csv("../Data/mixta/dataset.csv")
+
+datos <- dataset %>% 
+  mutate(obp_algorithm = parse_factor(as.character(obp_algorithm), 
+                                      levels = c("G01", "G02", "G03")),
+         prp_algorithm = parse_factor(as.character(prp_algorithm), 
+                                      levels = c("LGAP", "SSHAPE")),
+         ls_algorithm = parse_factor(as.character(ls_algorithm), 
+                                     levels = c("LS_1x0", "LS_1x1", "LS_1x2", "LS_2x2")),
+         num_orders = parse_factor(as.character(num_orders),
+                                   levels = c('20', '30', '40', '50', '60', '70', '80', '90', '100')),
+         capacity_device = parse_factor(as.character(capacity_device),
+                                        levels = c('30', '45', '60', '75')))
+
+```
+```{r}
+summary(datos)
+```
+---
+
+# Análisis Exploratorio de los Datos
+
+```{r echo=FALSE, fig.align='center'}
+ggplot(data=datos, mapping = aes(x = ls_algorithm, y=after_distance, fill=prp_algorithm)) +
+  stat_boxplot(geom ='errorbar', width = 0.6) +
+  geom_boxplot(width = 0.6) +
+  facet_grid(~obp_algorithm) +
+  scale_y_continuous(breaks = seq(0, to=25000, by=5000)) + 
+  theme_bw() +
+  xlab("Heurísticas de Búsqueda Local") +
+  ylab("Distancia") +
+  labs(fill = "Algoritmos de Recogida") +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.x = element_text(size = 14, colour = "black"),
+        axis.title.y = element_text(size = 14, colour = "black"),
+        axis.line = element_line(colour = "black")) 
+
+```
+
+---
+
+# Análisis Exploratorio de los Datos
+
+```{r echo=FALSE, fig.align='center'}
+ggplot(data=datos, mapping = aes(x = obp_algorithm, y=after_distance, fill=prp_algorithm)) +
+  stat_boxplot(geom ='errorbar', width = 0.6) +
+  geom_boxplot(width = 0.6) +
+  facet_grid(~ls_algorithm) +
+  scale_y_continuous(breaks = seq(0, to=25000, by=5000)) + 
+  theme_bw() +
+  xlab("Algoritmos de Agrupamiento") +
+  ylab("Distancia") +
+  labs(fill = "Algoritmos de Recogida") +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.x = element_text(size = 14, colour = "black"),
+        axis.title.y = element_text(size = 14, colour = "black"),
+        axis.line = element_line(colour = "black")) 
+```
+
+---
+
+# Análisis Exploratorio de los Datos
+
+```{r echo=FALSE, fig.align='center'}
+ggplot(data=datos, mapping = aes(x = prp_algorithm, y=after_distance, fill=ls_algorithm)) +
+  stat_boxplot(geom ='errorbar', width = 0.6) +
+  geom_boxplot(width = 0.6) +
+  facet_grid(~obp_algorithm) +
+  scale_y_continuous(breaks = seq(0, to=25000, by=5000)) + 
+  theme_bw() +
+  xlab("Algoritmos de Agrupamiento") +
+  ylab("Distancia") +
+  labs(fill = "Algoritmos de Recogida") +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.x = element_text(size = 14, colour = "black"),
+        axis.title.y = element_text(size = 14, colour = "black"),
+        axis.line = element_line(colour = "black")) 
+```
+
+---
+
+# Análisis Exploratorio de los Datos
+
+Aquí se puede conocer que el algoritmo que minimiza la distancia, sería la siguiente combinación: Greedy-03 + SShape + Local Search 1x2. 
+
+```{r echo=FALSE}
+datos %>% group_by(obp_algorithm, prp_algorithm, ls_algorithm) %>% 
+  summarise_at(
+    vars(after_distance),
+    list (
+      PROMEDIO = ~mean(., na.rm = FALSE),
+      DESVIACION = ~sd(., na.rm = FALSE),
+      MINIMO = ~min(., na.rm = FALSE)
+    )
+  ) %>% 
+  arrange(MINIMO) %>% 
+  head(n = 10)
+```
+
+---
+
+# Análisis Inferencial
+
+Dado que se desea conocer si la aplicación de los algoritmos heurísticos de búsqueda local en alguna de sus variaciones (1x1, 1x2, 2x2 o 2x3) iniciden en minimizar la distancia recorrida; se necesita verificar esta hipótesis estadísticamente.
+
+Para realizar este procedimiento, es necesario verificar algunos supuestos; tales como:
+
+- **Supuesto de independencia**, este supuesto se cumple, dado que en la simulación computacional se obtuvieron observaciones independientes;
+- **Supuesto de Normalidad**, los datos de las distancias tendrían que tener una distribución normal. 
+- **Supuesto de Homocedastecidad**, sería la homogeneidad de la varianza de la variable dependiente entre los grupos.
+
+---
+
+# Verificación del supuesto de Normalidad
+
+Se puede verificar gráficamente si existe normalidad en los datos, mediante el gráfico de la densidad o el histograma de las distancias.
+
+```{r echo=FALSE, fig.align='center'}
+ggplot(data = datos, aes(x= after_distance, y= ..density..)) + 
+  geom_density(alpha= .25) +
+  labs(title= 'Gráfico de densidad para las distancias', y= "Densidad", x= "Distancias")
+```
+
+---
+
+# Verificación del supuesto de Normalidad
+
+Verificación de normalidad mediante la prueba de Lilliefors.
+
+```{r}
+lillie.test(datos$after_distance)
+```
+
+En este caso, la Ho es que los datos son normales; sin embargo, el valor de p es muy cercano a cero lo que permite concluir que se rechaza la Ho; por tanto, los datos **no son normales**.
+
+---
+
+# Otra alternativa: Pruebas No Paramétricas
+
+Dado que no se puede utilizar una prueba paramétrica, se puede utilizar una prueba no paramétrica; sin embargo, para esto es necesario realizar la verificación del **supuesto de la homocedastecidad**.
+
+---
+
+# Supuesto de Homocedastecidad
+
+A continuación, la realiza la prueba de Bartlett.
+
+```{r}
+bartlett.test(data=datos, before_distance ~ obp_algorithm)
+```
+
+La Ho es que existe homogeneidad en la varianza; sin embargo, el valor de p es muy cercano a cero; por tanto, existe evidencia estadística para rechazar la Ho; es decir, no se cumple este supuesto tampoco. 
+
+---
+
+# Prueba ANOVA Robusta
+
+Dado que no se cumplieron los supuestos de normalidad ni de homocedastecidad, se debe utilizar una prueba robusta.
+
+---
+
+# Prueba ANOVA Robusta
+
+Primero utilizaremos la alternativa ANOVA Robusta (con la media recortada en un 20%), donde la Ho define que las medias de cada grupo son iguales.
+
+```{r}
+t1way(before_distance ~ obp_algorithm, data = datos)
+```
+
+Dado que el valor de p es muy cercano a cero, se rechaza la Ho; por lo tanto, las medias de los diferentes grupos son diferentes.
+
+---
+# Prueba ANOVA Robusta
+
+Si deseamos revisar de manera detallada las similitudes entre cada grupo, se detalla lo siguiente:
+
+```{r}
+lincon(before_distance ~ obp_algorithm, data = datos)
+```
+
+Se puede ver que las medias entre los algoritmos de agrupamiento Greedy-01 y Greedy-03 son similares, como se verificó visualmente.
+
+---
+
+# Prueba ANOVA Robusta
+
+En esta prueba se rechaza la Ho; por lo tanto, las medias de los grupos no son iguales.
+
+```{r}
+t1way(before_distance ~ prp_algorithm, data = datos)
+```
+
+---
+# Prueba ANOVA Robusta
+
+En esta prueba se acepta la Ho; por lo tanto, las medias de los grupos son iguales.
+
+```{r}
+t1way(before_distance ~ ls_algorithm, data = datos)
+```
+
+---
+# Prueba ANOVA Robusta
+
+Si deseamos revisar de manera detallada las similitudes entre cada grupo, se realiza la siguiente prueba:
+
+```{r}
+lincon(before_distance ~ ls_algorithm, data = datos)
+```
+
+Se verifica la similitud entre todos los grupos.
+
+---
+# Prueba YUEND Robusta
+
+Esta prueba se realiza para dos muestras dependientes:
+
+```{r}
+yuend(datos$before_distance, datos$after_distance)
+```
+Se rechaza la Ho; por lo tanto, las medias no son iguales; además, se puede inferir que la media de la distancia anterior es mayor a la distancia donde se han aplicado los algoritmos de búsqueda local; por lo tanto, si incide la aplicación de los algoritmos de Búsqueda Local para encontrar una distancia mínima.
+
+---
+class: center, middle
+
+# Muchas gracias
+---

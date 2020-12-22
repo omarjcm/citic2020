@@ -1,0 +1,16 @@
+"0","dataset <- read_csv(""../Data/mixta/dataset.csv"")
+"
+"2","
+[36m──[39m [1m[1mColumn specification[1m[22m [36m───────────────────────────────────────────────────────────────────────────[39m
+cols(
+  obp_algorithm = [31mcol_character()[39m,
+  prp_algorithm = [31mcol_character()[39m,
+  ls_algorithm = [31mcol_character()[39m,
+  time = [32mcol_double()[39m,
+  capacity_device = [32mcol_double()[39m,
+  num_orders = [32mcol_double()[39m,
+  before_distance = [32mcol_double()[39m,
+  after_distance = [32mcol_double()[39m
+)
+
+"

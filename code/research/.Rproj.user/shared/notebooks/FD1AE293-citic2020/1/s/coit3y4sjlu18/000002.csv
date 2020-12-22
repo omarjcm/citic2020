@@ -1,0 +1,8 @@
+"0",""
+"0","lincon(before_distance ~ obp_algorithm, data = datos)"
+"1","Call:
+"
+"1","lincon(formula = before_distance ~ obp_algorithm, data = datos)
+"
+"1","
+"
